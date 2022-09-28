@@ -1,5 +1,3 @@
-extern crate core;
-
 use std::{
     sync::{mpsc, Arc, Mutex},
     thread,
@@ -82,13 +80,16 @@ impl Worker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::time::Duration;
-    use std::fs;
-    use std::fs::OpenOptions;
-    use std::io::prelude::*;
-    use std::fs::File;
-    use std::io::{self, BufRead};
-    use std::path::Path;
+    use std::{
+        fs,
+        fs::OpenOptions,
+        fs::File,
+        io::prelude::*,
+        io::{self, BufRead},
+        time::Duration,
+        path::Path,
+
+    };
 
     const FILENAME: &str = "test.file";
     const THREADS: usize = 4;
