@@ -88,7 +88,6 @@ mod tests {
         io::{self, BufRead},
         time::Duration,
         path::Path,
-
     };
 
     const FILENAME: &str = "test.file";
@@ -126,7 +125,8 @@ mod tests {
 
         for i in 1..=3 {
             threadpool.execute(move || {
-                thread::sleep(Duration::from_secs(i as u64));
+                thread::sleep(Duration::from_millis(100 - i * 30 as u64));
+                // expect 3 to be saved with no delay, then the line below this loop adding a 0, then 2, then 1.
                 add_to_file(i as u8);
             })
         }
@@ -134,10 +134,25 @@ mod tests {
             add_to_file(0 as u8);
         });
 
-        for (i, line) in read_lines(FILENAME).expect("Couldn't read file").enumerate() {
-            if i < THREADS {
-                let result = line.unwrap().trim().parse::<usize>().unwrap();
-                assert_eq!(i, result)
+        drop(threadpool);
+
+        thread::sleep(Duration::from_secs(1));
+        let lines = read_lines(FILENAME).expect("failed to read");
+        for (i, line) in lines.enumerate() {
+            match line {
+                Ok(line) => {
+                    let result: usize = line.trim().parse().expect("Couldn't parse");
+                    if i == 0 {
+                        assert_eq!(i, result)
+                    } else {
+                        let expected = 3 - result + 1;
+                        assert_eq!(i, expected)
+                    }
+
+                }
+                _ => {
+                    println!("fail")
+                }
             }
         }
     }
